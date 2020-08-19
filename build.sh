@@ -12,8 +12,8 @@ try_pull() {
 }
 
 build() {
-    echo "> Build $IMAGE_NAME:$1 from $2/$3..."
-    docker build "./$2" --file "$2/$3" --tag "$IMAGE_NAME:$1"
+    echo "> Build $IMAGE_NAME:$3 from ./dockerfiles/$2, with GHC=$1"
+    docker build ./dockerfiles --file "./dockerfiles/$2" --build-arg GHC="$1" --tag "$IMAGE_NAME:$3"
 }
 
 maybe_push() {
@@ -25,18 +25,17 @@ maybe_push() {
 
 main() {
     while IFS=' ' read -ra line; do
-        tag="${line[0]}"
-        docker_dir="${line[2]}"
-        docker_file="${line[3]}"
-        IFS=':' read -ra alias_tags < <(echo "${line[1]}")
+        ghc_ver="${line[0]}"
+        IFS=':' read -ra image_tags < <(echo "${line[1]}")
+        dockerfile="${line[2]}"
 
-        try_pull "$IMAGE_NAME:${tag}"
-        build "$tag" "$docker_dir" "$docker_file"
-        maybe_push "$tag"
+        try_pull "$IMAGE_NAME:${image_tags[0]}"
+        build "$ghc_ver" "$dockerfile" "${image_tags[0]}"
+        maybe_push "${image_tags[0]}"
 
-        for t in ${alias_tags[@]}; do
-            echo "> Tag ${tag} to ${t}"
-            docker tag "$IMAGE_NAME:${tag}" "$IMAGE_NAME:${t}"
+        for t in ${image_tags[@]:1}; do
+            echo "> tag ${image_tags[0]} ${t}"
+            docker tag "$IMAGE_NAME:${image_tags[0]}" "$IMAGE_NAME:${t}"
             maybe_push "${t}"
         done
     done < $RELEASES_FILE
