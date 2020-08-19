@@ -1,0 +1,37 @@
+name: Builds and pushes Docker image
+
+on:
+  push:
+    branches:
+      - master
+
+  # run tests for any PRs.
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run builds
+        run: bash ./build.sh
+
+  push:
+    needs: test
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build & Push images
+        run: |
+          if [ "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "Login registry..."
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            echo "Build & Push"
+            IS_PUSH=true bash ./build.sh
+          else
+            echo "No such secrets, ignored."
+          fi

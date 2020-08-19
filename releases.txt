@@ -1,0 +1,2 @@
+8.10.2 8.10:8.10-buster:latest 8.10 Dockerfile
+8.8.4 8.8:8.8-buster 8.8 Dockerfile
