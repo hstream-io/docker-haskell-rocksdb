@@ -11,7 +11,8 @@ RUN git clone https://github.com/facebook/rocksdb.git /tmp/rocksdb && \
     cd /tmp/rocksdb && git checkout $ROCKSDB_VERSION && \
     make -j$BUILD_JOBS shared_lib && make install-shared
 
-RUN yes Y | apt-get remove --purge git libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev && \
+RUN apt-get remove -y --purge git libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev && \
+    apt-get -y autoremove && \
     rm -rf /tmp/rocksdb
 
 CMD ["ghci"]
