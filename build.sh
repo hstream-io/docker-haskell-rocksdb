@@ -11,9 +11,20 @@ try_pull() {
     docker pull $1 || true
 }
 
+smoke_test_rocksdb() {
+    echo "> Check if rocksdb has installed..."
+    docker run --rm -v $(pwd):/srv -w /srv "$1" bash -c 'apt-get update && apt-get install -y gcc && gcc tests/c_simple_example.c -lrocksdb -ldl -o /tmp/c_simple_example && /tmp/c_simple_example'
+}
+
 build() {
-    echo "> Build $IMAGE_NAME:$3 from ./dockerfiles/$2, with GHC=$1"
-    docker build ./dockerfiles --file "./dockerfiles/$2" --build-arg GHC="$1" --tag "$IMAGE_NAME:$3"
+    if [ "$1" == "buster.rocksdb" ]; then
+        echo "> Build $IMAGE_NAME:$2 from ./dockerfiles/$1, with ROCKSDB_VERSION="$3""
+        docker build ./dockerfiles --file "./dockerfiles/$1" --build-arg ROCKSDB_VERSION="$3" --tag "$IMAGE_NAME:$2"
+        smoke_test_rocksdb "$IMAGE_NAME:$2"
+    elif [ "$1" == "buster.haskell" ]; then
+        echo "> Build $IMAGE_NAME:$2 from ./dockerfiles/$1, with GHC=$3"
+        docker build ./dockerfiles --file "./dockerfiles/$1" --build-arg GHC="$3" --tag "$IMAGE_NAME:$2"
+    fi
 }
 
 maybe_push() {
@@ -25,12 +36,10 @@ maybe_push() {
 
 main() {
     while IFS=' ' read -ra line; do
-        ghc_ver="${line[0]}"
+        dockerfile="${line[0]}"
         IFS=':' read -ra image_tags < <(echo "${line[1]}")
-        dockerfile="${line[2]}"
-
         try_pull "$IMAGE_NAME:${image_tags[0]}"
-        build "$ghc_ver" "$dockerfile" "${image_tags[0]}"
+        build "$dockerfile" "${image_tags[0]}" "${line[2]}"
         maybe_push "${image_tags[0]}"
 
         for t in ${image_tags[@]:1}; do
