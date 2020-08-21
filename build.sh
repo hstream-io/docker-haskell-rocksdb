@@ -6,11 +6,6 @@ RELEASES_FILE=releases.txt
 BUILD_JOBS=${BUILD_JOBS:-4}
 IS_PUSH=${IS_PUSH:-false}
 
-try_pull() {
-    echo "> Try pull $1, ignore results..."
-    docker pull $1 || true
-}
-
 build() {
     if [ "$1" == "buster.rocksdb" ]; then
         echo "> Build $IMAGE_NAME:$2 from ./dockerfiles/$1, with ROCKSDB_VERSION="$3""
@@ -36,7 +31,6 @@ main() {
     while IFS=' ' read -ra line; do
         dockerfile="${line[0]}"
         IFS=':' read -ra image_tags < <(echo "${line[1]}")
-        try_pull "$IMAGE_NAME:${image_tags[0]}"
         build "$dockerfile" "${image_tags[0]}" "${line[2]}"
         maybe_push "${image_tags[0]}"
 
