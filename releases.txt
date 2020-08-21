@@ -1,3 +1,4 @@
 buster.rocksdb    base-runtime                      v6.10.2
+buster.haskell    8.6.5:8.6:8.6-buster              8.6.5
 buster.haskell    8.8.4:8.8:8.8-buster              8.8.4
 buster.haskell    8.10.2:8.10:8.10-buster:latest    8.10.2
