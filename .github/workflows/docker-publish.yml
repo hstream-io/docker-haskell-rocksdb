@@ -6,11 +6,21 @@ on:
       - '*'
   pull_request:
 
+env:
+  CACHE_DIR: ~/.cache/docker
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Cache docker builds
+        uses: actions/cache@v2
+        with:
+          path: |
+            $CACHE_DIR
+          key: ${{ runner.os }}-${{ hashFiles('dockerfiles/*') }}
 
       - name: Build & Push images
         run: |
@@ -19,11 +29,11 @@ jobs:
               echo "Login registry..."
               echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
               echo "Build & Push..."
-              IS_PUSH=true bash ./build.sh
+              IS_PUSH=true CACHE_DIR=$CACHE_DIR bash ./build.sh
             else
               echo "No such secrets, ignored."
             fi
           else
             echo "Build..."
-            IS_PUSH=false bash ./build.sh
+            IS_PUSH=false CACHE_DIR=$CACHE_DIR bash ./build.sh
           fi
