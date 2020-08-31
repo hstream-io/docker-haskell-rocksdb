@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-IMAGE_NAME=hstreamio/haskell-rocksdb
+IMAGE_NAME=hstreamdb/haskell-rocksdb
 RELEASES_FILE=releases.txt
 BUILD_JOBS=${BUILD_JOBS:-4}
 IS_PUSH=${IS_PUSH:-false}
