@@ -1,4 +1,4 @@
-FROM hstreamio/haskell-rocksdb:base-runtime
+FROM hstreamdb/haskell-rocksdb:base-runtime
 
 # ------------------------------------------------------------------------------
 # Install haskell
